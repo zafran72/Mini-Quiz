@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Quiz</title>
+
+    <link rel="stylesheet" href="bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary">
+        <span class="navbar-brand mb-0 h1">Quiz</span>
+      </nav>
+    <div class="container pt-5">
+            <h1 class="container pb-4" style="text-align: center;">Quiz: General Knowledge</h1>
+        
+        <div class="card mb-3 bg-primary text-white">
+            <div class="card-body">
+              <h4 class="card-title pb-2">QUESTION : </h4>
+              <form id="formQuiz" action="/" method="post">
+                <div id="question">
+
+                </div>
+              </form>
+              <button type="button" class="btn btn-dark mt-3 ml-5" id="submit">Submit</button>
+            </div>
+          </div>
+          <div id="final" class="alert alert-primary" role="alert">
+            
+          </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+    <script>
+        let numQuestion = 1;
+        let answerID = 1;
+        let correct_answers = [];
+
+        fetch('https://opentdb.com/api.php?amount=10&category=9&type=multiple')
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                data.results.forEach(data => {
+                    addQuestion(data);
+                });
+            });
+
+        document.querySelector('#submit').addEventListener("click", function(event){
+            
+            event.preventDefault();
+            submitQuiz();
+        })
+
+        function addQuestion(data) {
+            let question = document.querySelector('#question');
+            question.innerHTML += `<div class="row mt-3 mb-2 mx-2"><h5 class="card-text">${numQuestion++}. ${data.question}</h5>`;
+            
+            let answers = [];
+            correct_answers.push(data.correct_answer);
+            answers.push(data.correct_answer);
+            data.incorrect_answers.forEach(element => {
+                answers.push(element);
+            })
+            shuffleAnswers(answers);
+            answers.forEach(element => {
+                question.innerHTML += `<div class="custom-control custom-radio">
+                        <input type="radio" name="answer${numQuestion}" id="${answerID++}" value="${element}">
+                        <label for="${answerID++}">${element}</label><br>
+                        </div></div>`;
+            })
+        }
+
+        function shuffleAnswers(array) {
+            for (let index = 0; index < array.length; index++) {
+                random = Math.floor(Math.random()*4);
+                let tmp = array[index];
+                array[index] = array[random];
+                array[random] = tmp;                
+            }
+        }
+
+        function submitQuiz() {
+            let total = document.querySelector('#final');
+            let totalScore = 0;
+            let userAnswers = $("input[type='radio']");
+            userAnswers = userAnswers.filter(":checked");
+            for (let index = 0; index < userAnswers.length; index++) {
+                if(correct_answers[index] == userAnswers[index].value) {
+                    totalScore += 10;
+                }                    
+            }
+            total.innerHTML += `<h4>Congrats! Your score is ${totalScore}</h4>`;
+        }
+            
+
+        
+    </script>
+</body>
+</html>
